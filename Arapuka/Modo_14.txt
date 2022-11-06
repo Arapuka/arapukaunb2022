@@ -1,0 +1,45 @@
+//14 - RTC - Testar o RTC
+char modo_rtc  (char modo) {
+    char qtd,argc[4], argv[15]; //Receber comandos
+    char vetor[7];
+    modo_ser1(modo);
+    ser1_str(" Testar RTC\n");
+    lcdb_str(1,1,"RTC");
+    while(TRUE){
+        qtd=seri_cmdo(argc,argv,15);  //Esperar comando
+        if (qtd!=0){
+            ser1_str("Chegou: ");
+            ser1_str(&argv[0]);
+            ser1_crlf(1);
+
+            if (argv[0]=='x' || argv[0]=='X')   return modo;
+
+            // Hora (hh:mm:ss)
+            if (argv[2] == ':' && argv[5]==':'){
+              vetor[2]=16*(argv[0]-0x30)+(argv[1]-0x30);  //Segundos
+              vetor[1]=16*(argv[3]-0x30)+(argv[4]-0x30);  //Minutos
+              vetor[0]=16*(argv[6]-0x30)+(argv[7]-0x30);  //Horas
+              rtc_wr_vet(0,vetor,3);
+            }
+
+            //Data (dd/mm/aa)
+            if (argv[2] == '/' && argv[5]=='/'){
+              vetor[0]=16*(argv[0]-0x30)+(argv[1]-0x30);  //Dia
+              vetor[1]=16*(argv[3]-0x30)+(argv[4]-0x30);  //Mês
+              vetor[2]=16*(argv[6]-0x30)+(argv[7]-0x30);  //Ano
+              rtc_wr_vet(4,vetor,3);
+            }
+
+        }
+
+        rtc_rd_vet(0, vetor, 7);
+        ser1_data_hora(vetor);
+        ser1_crlf(1);
+        lcdb_data(1,9,vetor);
+        lcdb_hora(2,9,vetor);
+        //ser1_hex8(x);
+        //ser1_crlf(1);
+        delay_10ms(100);
+    }
+    return modo;
+}
